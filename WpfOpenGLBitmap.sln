@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfOpenGLBitmap", "WpfOpenGLBitmap\WpfOpenGLBitmap.csproj", "{0BFA835B-992A-4082-851D-62694E56F5CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfOpenGLBitmapExample", "WpfOpenGLBitmapExample\WpfOpenGLBitmapExample.csproj", "{645E62C6-B005-4190-882B-59961ACF7929}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0BFA835B-992A-4082-851D-62694E56F5CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BFA835B-992A-4082-851D-62694E56F5CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BFA835B-992A-4082-851D-62694E56F5CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BFA835B-992A-4082-851D-62694E56F5CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{645E62C6-B005-4190-882B-59961ACF7929}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{645E62C6-B005-4190-882B-59961ACF7929}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{645E62C6-B005-4190-882B-59961ACF7929}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{645E62C6-B005-4190-882B-59961ACF7929}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
