@@ -21,6 +21,7 @@ namespace WpfOpenGLBitmap
     using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
     using Size = System.Drawing.Size;
 
+
     public class OpenGLBitmapUpdater : IDisposable
     {
         #region fields
@@ -40,6 +41,10 @@ namespace WpfOpenGLBitmap
 
         private Size framebufferSize;
 
+        private event Action<GLControl> OnPrepare;
+
+        private event Action<GLControl> OnFinalize;
+
         #endregion
 
         #region perperties
@@ -47,13 +52,14 @@ namespace WpfOpenGLBitmap
         /// framebuffer size
         /// </summary>
         public Size Size { get; set; }
+
         #endregion
 
         /// <summary>
         /// constructor
         /// </summary>
-        public OpenGLBitmapUpdater()
-            : this(new Size(100, 100))
+        public OpenGLBitmapUpdater(Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
+            : this(new Size(100, 100), onPrepare ,onFinalize)
         {
             
         }
@@ -61,28 +67,41 @@ namespace WpfOpenGLBitmap
         /// <summary>
         /// Constructor
         /// </summary>
-        public OpenGLBitmapUpdater(Size size)
-            : this(size, new GraphicsMode(DisplayDevice.Default.BitsPerPixel, 16, 0, 4, 0, 2, false))
+        public OpenGLBitmapUpdater(Size size, Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
+            : this(size, new GraphicsMode(DisplayDevice.Default.BitsPerPixel, 16, 0, 4, 0, 2, false), onPrepare, onFinalize)
         {
         }
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public OpenGLBitmapUpdater(Size size, GraphicsMode graphicsMode)
+        public OpenGLBitmapUpdater(Size size, GraphicsMode graphicsMode, Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
         {
             this.loaded = false;
             this.Size = size;
             this.framebufferId = -1;
+
+            OnPrepare += onPrepare;
+            OnFinalize += onFinalize;
 
             messagingTask.StartMessageLoop(
                 prepare: () =>
                 {
                     this.glControl = new GLControl(graphicsMode);
                     this.glControl.MakeCurrent();
+                    if (OnPrepare != null)
+                    {
+                        OnPrepare(this.glControl);
+                        OnPrepare -= onPrepare;
+                    }
                 },
                 finalize: () =>
                 {
+                    if (OnFinalize != null)
+                    {
+                        OnFinalize(this.glControl);
+                        OnFinalize -= onFinalize;
+                    }
                     this.glControl.Context.MakeCurrent(null);
                     this.glControl.Dispose();
                 });

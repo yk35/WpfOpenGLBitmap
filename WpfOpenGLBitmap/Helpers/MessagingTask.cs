@@ -19,13 +19,21 @@ namespace WpfOpenGLBitmap.Helpers
                 _handle = new EventWaitHandle(false, EventResetMode.ManualReset);
             }
 
+#if false
             public bool IsCompleted => this.AsyncWaitHandle.WaitOne(TimeSpan.Zero);
 
             public WaitHandle AsyncWaitHandle => _handle;
 
+            public bool CompletedSynchronously => this.AsyncWaitHandle.WaitOne();
+#else
+            public bool IsCompleted { get { return this.AsyncWaitHandle.WaitOne(TimeSpan.Zero); } }
+
+            public WaitHandle AsyncWaitHandle { get{ return _handle;} }
+
+            public bool CompletedSynchronously { get{ return this.AsyncWaitHandle.WaitOne();} } 
+#endif
             public object AsyncState { get; set; }
 
-            public bool CompletedSynchronously => this.AsyncWaitHandle.WaitOne();
 
             internal Action Action;
 
@@ -50,9 +58,15 @@ namespace WpfOpenGLBitmap.Helpers
             _messageLoopTask = Task.Factory.StartNew(
                 () =>
                     {
-                        prepare?.Invoke();
+                        if (prepare != null)
+                        {
+                            prepare.Invoke();
+                        }
                         MessageLoop();
-                        finalize?.Invoke();
+                        if (finalize != null)
+                        {
+                            finalize.Invoke();
+                        }
                     },
                 TaskCreationOptions.LongRunning);
         }
@@ -118,7 +132,10 @@ namespace WpfOpenGLBitmap.Helpers
 
         }
 
-        public bool IsRunning => _messageLoopTask != null && !_messageLoopTask.IsCompleted;
+        public bool IsRunning
+        {
+            get { return _messageLoopTask != null && !_messageLoopTask.IsCompleted; }
+        }
     }
     
 }
