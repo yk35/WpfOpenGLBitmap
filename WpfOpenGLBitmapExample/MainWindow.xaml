@@ -8,7 +8,7 @@
         Title="MainWindow" Height="350" Width="525" >
     <Grid Background="White">
         <Button x:Name="button_back" Content="ButtonBG" HorizontalAlignment="Right" Margin="0,10,10,0" VerticalAlignment="Top" Width="119" Height="39"/>
-        <Image x:Name="image" Stretch="None">
+        <Image x:Name="image" Stretch="None" IsHitTestVisible="False">
             <Image.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="MenuItem #1" />
