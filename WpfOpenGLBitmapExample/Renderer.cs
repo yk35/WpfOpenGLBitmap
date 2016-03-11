@@ -38,7 +38,7 @@
 
                 GL.Color3(Color.Red);
 
-                GL.Begin(PrimitiveType.Points);
+                GL.Begin(BeginMode.Points);
 
                 Random rnd = new Random();
                 for (int i = 0; i < 1000000; i++)
