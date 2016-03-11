@@ -82,6 +82,10 @@ namespace WpfOpenGLBitmap.Helpers
                     result.Action();
                     result._handle.Set();
                 }
+                else
+                {
+                    Thread.Sleep(1);
+                }
             }
         }
 
