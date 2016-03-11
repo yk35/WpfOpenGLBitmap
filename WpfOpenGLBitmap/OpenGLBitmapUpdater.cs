@@ -31,7 +31,7 @@ namespace WpfOpenGLBitmap
 
         private int colorbufferId;
 
-        private int[] pixelbufferId = new int[2];
+        private int pixelbufferId; 
 
         private GLControl glControl;
 
@@ -178,39 +178,13 @@ namespace WpfOpenGLBitmap
         private void Cleanup(Size size, IntPtr backbufferPtr)
         {
             GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
-            var halfHeight = size.Height >> 1;
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, pixelbufferId[0]);
-            GL.ReadPixels(
-                0,
-                0,
-                size.Width,
-                halfHeight,
-                PixelFormat.Bgra,
-                PixelType.UnsignedByte,
-                IntPtr.Zero);
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, pixelbufferId[1]);
-            GL.ReadPixels(
-                0,
-                halfHeight,
-                size.Width,
-                size.Height - halfHeight,
-                PixelFormat.Bgra,
-                PixelType.UnsignedByte,
-                IntPtr.Zero);
             IntPtr glPixel = IntPtr.Zero;
-            var bufferSize = size.Width * halfHeight * 4;
-            var lastBufferSize = size.Width * (size.Height - halfHeight) * 4;
+            var bufferSize = size.Width * size.Height * 4;
+            GL.ReadPixels(0, 0, size.Width, size.Height, PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero);
 
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, pixelbufferId[0]);
             glPixel = GL.MapBuffer(BufferTarget.PixelPackBuffer, BufferAccess.ReadOnly);
-            GL.UnmapBuffer(BufferTarget.PixelPackBuffer);
             CopyMemory(backbufferPtr, glPixel, (uint)bufferSize);
-
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, pixelbufferId[1]);
-            glPixel = GL.MapBuffer(BufferTarget.PixelPackBuffer, BufferAccess.ReadOnly);
-            CopyMemory(backbufferPtr+ bufferSize, glPixel, (uint)lastBufferSize);
             GL.UnmapBuffer(BufferTarget.PixelPackBuffer);
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
         }
 
         private void Prepare(Size framebuffersize)
@@ -247,17 +221,14 @@ namespace WpfOpenGLBitmap
             {
                 GL.DeleteRenderbuffer(this.depthbufferId);
             }
-            if (this.pixelbufferId[0] > 0)
+            if (this.pixelbufferId > 0)
             {
-                GL.DeleteBuffers(2, pixelbufferId);
+                GL.DeleteBuffer(pixelbufferId);
             }
 
-            var halfHeight = framebufferSize.Height >> 1;
-            GL.GenBuffers(2, pixelbufferId);
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, pixelbufferId[0]);
-            GL.BufferData(BufferTarget.PixelPackBuffer, (IntPtr)(framebufferSize.Width * halfHeight * 4), IntPtr.Zero, BufferUsageHint.StreamRead);
-            GL.BindBuffer(BufferTarget.PixelPackBuffer, pixelbufferId[1]);
-            GL.BufferData(BufferTarget.PixelPackBuffer, (IntPtr)(framebufferSize.Width * (framebufferSize.Height - halfHeight) * 4), IntPtr.Zero, BufferUsageHint.StreamRead);
+            pixelbufferId = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, pixelbufferId);
+            GL.BufferData(BufferTarget.PixelPackBuffer, (IntPtr)(framebufferSize.Width * framebufferSize.Height * 4), IntPtr.Zero, BufferUsageHint.StreamRead);
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
 
             this.framebufferId = GL.GenFramebuffer();
@@ -296,6 +267,7 @@ namespace WpfOpenGLBitmap
             }
 
             this.loaded = true;
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, pixelbufferId);
         }
         #endregion
     }
