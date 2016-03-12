@@ -21,6 +21,9 @@ namespace WpfOpenGLBitmap
 
     using Size = System.Drawing.Size;
 
+    /// <summary>
+    /// Render to Offscreen using OpenTK(OpenGL) and write to D3DImage using NV_DX_interop.  
+    /// </summary>
     public class OpenGLD3DImageUpdater : IDisposable, IWpfOpenGLBitmapSource
     {
         #region fields
@@ -53,6 +56,12 @@ namespace WpfOpenGLBitmap
                 this.sharedSurface.Dispose();
                 this.sharedSurface = null;
                 this.device.Dispose();
+                this.device = null;
+            }
+            if (this.glControl != null)
+            {
+                this.glControl.Dispose();
+                this.glControl = null;
             }
         }
 
@@ -85,7 +94,7 @@ namespace WpfOpenGLBitmap
 
         public Size Size { get; set; }
 
-                /// <summary>
+        /// <summary>
         /// constructor
         /// </summary>
         public OpenGLD3DImageUpdater()
@@ -247,6 +256,7 @@ namespace WpfOpenGLBitmap
                 }
                 catch (Exception ex)
                 {
+                    // ???
                     this.device.ResetEx(ref this.presentparams);
                 }
                 finally

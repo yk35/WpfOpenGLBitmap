@@ -21,7 +21,9 @@ namespace WpfOpenGLBitmap
     using PixelFormat = OpenTK.Graphics.OpenGL.PixelFormat;
     using Size = System.Drawing.Size;
 
-
+    /// <summary>
+    /// Render to Offscreen using OpenTK(OpenGL) and write to WriteableBitmap.  
+    /// </summary>
     public class OpenGLWriteableBitmapUpdater : IDisposable, IWpfOpenGLBitmapSource
     {
         #region fields

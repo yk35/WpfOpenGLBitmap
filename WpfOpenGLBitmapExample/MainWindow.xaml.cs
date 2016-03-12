@@ -51,8 +51,15 @@ namespace OpenGLBitmapSourceExample
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            //bmpSource = new OpenGLWriteableBitmapUpdater();
-            bmpSource = new OpenGLD3DImageUpdater();
+            try
+            {
+                bmpSource = new OpenGLD3DImageUpdater();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                bmpSource = new OpenGLWriteableBitmapUpdater();
+            }
             asyncResult = null;
             int idx = 0;
             renderer = new Renderer();
@@ -71,6 +78,10 @@ namespace OpenGLBitmapSourceExample
                     var actualWidth = this.ActualWidth;
                     var actualHeight = this.ActualHeight;
                     bmpSource.Size = new Size((int)actualWidth, (int)actualHeight);
+                    if (this.bmpSource is OpenGLWriteableBitmapUpdater)
+                    {
+                        this.backbuffer = null;
+                    }
                     this.asyncResult = bmpSource.BeginRender(
                         () =>
                         {
