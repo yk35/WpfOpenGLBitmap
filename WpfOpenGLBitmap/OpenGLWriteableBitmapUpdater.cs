@@ -22,7 +22,7 @@ namespace WpfOpenGLBitmap
     using Size = System.Drawing.Size;
 
 
-    public class OpenGLBitmapUpdater : IDisposable
+    public class OpenGLWriteableBitmapUpdater : IDisposable, IWpfOpenGLBitmapSource
     {
         #region fields
         private int depthbufferId;
@@ -58,7 +58,7 @@ namespace WpfOpenGLBitmap
         /// <summary>
         /// constructor
         /// </summary>
-        public OpenGLBitmapUpdater(Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
+        public OpenGLWriteableBitmapUpdater(Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
             : this(new Size(100, 100), onPrepare ,onFinalize)
         {
             
@@ -67,7 +67,7 @@ namespace WpfOpenGLBitmap
         /// <summary>
         /// Constructor
         /// </summary>
-        public OpenGLBitmapUpdater(Size size, Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
+        public OpenGLWriteableBitmapUpdater(Size size, Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
             : this(size, new GraphicsMode(DisplayDevice.Default.BitsPerPixel, 16, 0, 4, 0, 2, false), onPrepare, onFinalize)
         {
         }
@@ -75,7 +75,7 @@ namespace WpfOpenGLBitmap
         /// <summary>
         /// Constructor
         /// </summary>
-        public OpenGLBitmapUpdater(Size size, GraphicsMode graphicsMode, Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
+        public OpenGLWriteableBitmapUpdater(Size size, GraphicsMode graphicsMode, Action<GLControl> onPrepare = null, Action<GLControl> onFinalize = null)
         {
             this.loaded = false;
             this.Size = size;
@@ -122,7 +122,7 @@ namespace WpfOpenGLBitmap
         /// <param name="renderAction">request render per frame</param>
         /// <param name="backbuffer">writing frame bitmap</param>
         /// <returns>async result</returns>
-        public IAsyncResult BeginRender(Action renderAction, ref WriteableBitmap backbuffer)
+        public IAsyncResult BeginRender(Action renderAction, ref ImageSource backbuffer)
         {
             if (backbuffer == null || backbuffer.Width != this.Size.Width || backbuffer.Height != this.Size.Height)
             {
@@ -134,7 +134,7 @@ namespace WpfOpenGLBitmap
                     PixelFormats.Bgra32,
                     BitmapPalettes.WebPalette);
             }
-            var resultBuffer = backbuffer;
+            var resultBuffer = (WriteableBitmap)backbuffer;
             resultBuffer.Lock();
             IntPtr bufferPtr = resultBuffer.BackBuffer;
             var curSize = Size;
@@ -146,7 +146,7 @@ namespace WpfOpenGLBitmap
                         GL.Finish();
                         Cleanup(curSize, bufferPtr);
                     });
-            (asyncResult as MessagingTask.AsyncResult).AsyncState = resultBuffer;
+            (asyncResult as AsyncResult).AsyncState = resultBuffer;
             return asyncResult;
         }
 
@@ -155,7 +155,7 @@ namespace WpfOpenGLBitmap
         /// </summary>
         /// <param name="asyncResult">IAsyncResult that returns BeginRender()</param>
         /// <returns>bitmap that pass at BeginRender()</returns>
-        public WriteableBitmap EndRender(IAsyncResult asyncResult)
+        public ImageSource EndRender(IAsyncResult asyncResult)
         {
             if (messagingTask.EndAysncAction(asyncResult)) 
             {
@@ -271,5 +271,7 @@ namespace WpfOpenGLBitmap
         }
         #endregion
     }
+
+
 }
 

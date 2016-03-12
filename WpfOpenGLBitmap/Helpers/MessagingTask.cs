@@ -12,43 +12,6 @@ namespace WpfOpenGLBitmap.Helpers
         private CancellationTokenSource _cancelToken = new CancellationTokenSource();
         private Task _messageLoopTask = null;
 
-        internal class AsyncResult : IAsyncResult, IDisposable
-        {
-            internal AsyncResult()
-            {
-                _handle = new EventWaitHandle(false, EventResetMode.ManualReset);
-            }
-
-#if false
-            public bool IsCompleted => this.AsyncWaitHandle.WaitOne(TimeSpan.Zero);
-
-            public WaitHandle AsyncWaitHandle => _handle;
-
-            public bool CompletedSynchronously => this.AsyncWaitHandle.WaitOne();
-#else
-            public bool IsCompleted { get { return this.AsyncWaitHandle.WaitOne(TimeSpan.Zero); } }
-
-            public WaitHandle AsyncWaitHandle { get{ return _handle;} }
-
-            public bool CompletedSynchronously { get{ return this.AsyncWaitHandle.WaitOne();} } 
-#endif
-            public object AsyncState { get; set; }
-
-
-            internal Action Action;
-
-            internal EventWaitHandle _handle;
-
-            public void Dispose()
-            {
-                if (AsyncWaitHandle != null)
-                {
-                    AsyncWaitHandle.Dispose();
-                    _handle = null;
-                }
-            }
-        }
-
         public MessagingTask()
         {
         }

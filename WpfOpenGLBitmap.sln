@@ -1,15 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfOpenGLBitmap", "WpfOpenGLBitmap\WpfOpenGLBitmap.csproj", "{0BFA835B-992A-4082-851D-62694E56F5CD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfOpenGLBitmapExample", "WpfOpenGLBitmapExample\WpfOpenGLBitmapExample.csproj", "{645E62C6-B005-4190-882B-59961ACF7929}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfOpenGLD3DImage", "WpfOpenGLD3DImage\WpfOpenGLD3DImage.csproj", "{77818B7F-5557-49A1-AEB3-728E00D732FC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfOpenGLD3DImageExample", "WpfOpenGLD3DImageExample\WpfOpenGLD3DImageExample.csproj", "{D3A486D4-0F25-4209-A26F-08C2D80EC126}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +21,6 @@ Global
 		{645E62C6-B005-4190-882B-59961ACF7929}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{645E62C6-B005-4190-882B-59961ACF7929}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{645E62C6-B005-4190-882B-59961ACF7929}.Release|Any CPU.Build.0 = Release|Any CPU
-		{77818B7F-5557-49A1-AEB3-728E00D732FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77818B7F-5557-49A1-AEB3-728E00D732FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77818B7F-5557-49A1-AEB3-728E00D732FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77818B7F-5557-49A1-AEB3-728E00D732FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D3A486D4-0F25-4209-A26F-08C2D80EC126}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D3A486D4-0F25-4209-A26F-08C2D80EC126}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D3A486D4-0F25-4209-A26F-08C2D80EC126}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D3A486D4-0F25-4209-A26F-08C2D80EC126}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

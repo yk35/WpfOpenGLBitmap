@@ -30,15 +30,17 @@ namespace OpenGLBitmapSourceExample
     {
         #region Fields
 
-        private WriteableBitmap[] backbuffer = new WriteableBitmap[2];
+        private ImageSource backbuffer;
 
-        private OpenGLBitmapUpdater bmpSource;
+        private IWpfOpenGLBitmapSource bmpSource;
 
         private int frames;
 
         private DateTime lastMeasureTime;
 
         private Renderer renderer;
+
+        private IAsyncResult asyncResult;
 
         #endregion
         public MainWindow()
@@ -49,13 +51,12 @@ namespace OpenGLBitmapSourceExample
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            bmpSource = new OpenGLBitmapUpdater();
-            IAsyncResult asyncResult = null;
+            //bmpSource = new OpenGLWriteableBitmapUpdater();
+            bmpSource = new OpenGLD3DImageUpdater();
+            asyncResult = null;
             int idx = 0;
             renderer = new Renderer();
-            var dispatcherTimer = new DispatcherTimer();
-            dispatcherTimer.Interval = TimeSpan.FromMilliseconds(1);
-            dispatcherTimer.Tick += (o, args) =>
+            CompositionTarget.Rendering += (o, args) =>
             {
                 if (DateTime.Now.Subtract(this.lastMeasureTime) > TimeSpan.FromSeconds(1))
                 {
@@ -63,14 +64,14 @@ namespace OpenGLBitmapSourceExample
                     this.frames = 0;
                     this.lastMeasureTime = DateTime.Now;
                 }
-                if (asyncResult == null || asyncResult.IsCompleted)
+                if (this.asyncResult == null || this.asyncResult.IsCompleted)
                 {
                     this.frames++;
                     image.Source = bmpSource.EndRender(asyncResult);
                     var actualWidth = this.ActualWidth;
                     var actualHeight = this.ActualHeight;
                     bmpSource.Size = new Size((int)actualWidth, (int)actualHeight);
-                    asyncResult = bmpSource.BeginRender(
+                    this.asyncResult = bmpSource.BeginRender(
                         () =>
                         {
                             GL.MatrixMode(MatrixMode.Projection);
@@ -82,10 +83,9 @@ namespace OpenGLBitmapSourceExample
 
                             this.renderer.Render();
                         },
-                        ref backbuffer[idx++ % 2]);
+                        ref backbuffer);
                 }
             };
-            dispatcherTimer.Start();
         }
     }
 }
