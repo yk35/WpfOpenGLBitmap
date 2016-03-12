@@ -9,7 +9,7 @@ namespace WpfOpenGLBitmap.Helpers
     using System.Reflection;
     using System.Runtime.InteropServices;
 
-    public class WGL_NV_DX_interop
+    internal sealed class WGL_NV_DX_interop
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate System.Boolean wglDXSetResourceShareHandleNV(IntPtr dxObject, IntPtr shareHandle);

@@ -61,7 +61,6 @@ namespace OpenGLBitmapSourceExample
                 bmpSource = new OpenGLWriteableBitmapUpdater();
             }
             asyncResult = null;
-            int idx = 0;
             renderer = new Renderer();
             CompositionTarget.Rendering += (o, args) =>
             {
@@ -73,13 +72,17 @@ namespace OpenGLBitmapSourceExample
                 }
                 if (this.asyncResult == null || this.asyncResult.IsCompleted)
                 {
-                    this.frames++;
                     image.Source = bmpSource.EndRender(asyncResult);
                     var actualWidth = this.ActualWidth;
                     var actualHeight = this.ActualHeight;
                     bmpSource.Size = new Size((int)actualWidth, (int)actualHeight);
                     if (this.bmpSource is OpenGLWriteableBitmapUpdater)
                     {
+                        // call GC.collect every second(frames == 0)
+                        if (this.frames == 0)
+                        {
+                            GC.Collect();
+                        }
                         this.backbuffer = null;
                     }
                     this.asyncResult = bmpSource.BeginRender(
@@ -95,6 +98,7 @@ namespace OpenGLBitmapSourceExample
                             this.renderer.Render();
                         },
                         ref backbuffer);
+                    this.frames++;
                 }
             };
         }

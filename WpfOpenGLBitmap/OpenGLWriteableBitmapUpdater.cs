@@ -83,26 +83,26 @@ namespace WpfOpenGLBitmap
             this.Size = size;
             this.framebufferId = -1;
 
-            OnPrepare += onPrepare;
-            OnFinalize += onFinalize;
+            this.OnPrepare += onPrepare;
+            this.OnFinalize += onFinalize;
 
             messagingTask.StartMessageLoop(
                 prepare: () =>
                 {
                     this.glControl = new GLControl(graphicsMode);
                     this.glControl.MakeCurrent();
-                    if (OnPrepare != null)
+                    if (this.OnPrepare != null)
                     {
-                        OnPrepare(this.glControl);
-                        OnPrepare -= onPrepare;
+                        this.OnPrepare(this.glControl);
+                        this.OnPrepare -= onPrepare;
                     }
                 },
                 finalize: () =>
                 {
-                    if (OnFinalize != null)
+                    if (this.OnFinalize != null)
                     {
-                        OnFinalize(this.glControl);
-                        OnFinalize -= onFinalize;
+                        this.OnFinalize(this.glControl);
+                        this.OnFinalize -= onFinalize;
                     }
                     this.glControl.Context.MakeCurrent(null);
                     this.glControl.Dispose();

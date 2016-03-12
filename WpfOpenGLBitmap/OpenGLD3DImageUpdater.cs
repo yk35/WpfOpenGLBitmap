@@ -9,7 +9,6 @@ namespace WpfOpenGLBitmap
     using System.Windows;
     using System.Windows.Interop;
     using System.Windows.Media;
-    using System.Windows.Media.Imaging;
 
     using OpenTK;
     using OpenTK.Graphics;
@@ -74,9 +73,10 @@ namespace WpfOpenGLBitmap
             var asyncResult = new AsyncResult();
             asyncResult.AsyncState = backbuffer;
 
-            // do rendering
+            // rendering
             RenderGLToD3dImage((D3DImage)backbuffer, Size.Width, Size.Height, renderAction);
 
+            // finished rendering
             asyncResult._handle.Set();
             return asyncResult;
         }
@@ -104,16 +104,19 @@ namespace WpfOpenGLBitmap
         }
 
         /// <summary>
-        /// Constructor
+        /// constructor
         /// </summary>
+        /// <param name="size">initialize surface size</param>
         public OpenGLD3DImageUpdater(Size size)
-            : this(size, new GraphicsMode(DisplayDevice.Default.BitsPerPixel, 16, 0, 4, 0, 2, false))
+            : this(size, new GraphicsMode(DisplayDevice.Default.BitsPerPixel, 24, 0, 4, 0, 2, false))
         {
         }
 
         /// <summary>
-        /// Constructor
+        /// constructor
         /// </summary>
+        /// <param name="size">initialize surface size</param>
+        /// <param name="graphicsMode">OpenGL graphics mode</param>
         public OpenGLD3DImageUpdater(
             Size size,
             GraphicsMode graphicsMode)
@@ -125,6 +128,12 @@ namespace WpfOpenGLBitmap
         }
 
         #region private methods
+        /// <summary>
+        /// Create D3D9Ex context and OpenGL framebuffer
+        /// </summary>
+        /// <param name="handle"></param>
+        /// <param name="hasDepthBuffer"></param>
+        /// <param name="hasStencilBuffer"></param>
         private void CreateD3D9ExContext(IntPtr handle, bool hasDepthBuffer, bool hasStencilBuffer)
         {
             var d3d = new Direct3DEx();
@@ -132,24 +141,23 @@ namespace WpfOpenGLBitmap
             int initW = Size.Width;
             int initH = Size.Height;
 
-            presentparams = new PresentParameters();
-            presentparams.Windowed = true;
-            presentparams.SwapEffect = SwapEffect.Discard;
-            presentparams.DeviceWindowHandle = handle;
-            presentparams.PresentationInterval = PresentInterval.Default;
+            this.presentparams = new PresentParameters();
+            this.presentparams.Windowed = true;
+            this.presentparams.SwapEffect = SwapEffect.Discard;
+            this.presentparams.DeviceWindowHandle = handle;
+            this.presentparams.PresentationInterval = PresentInterval.Default;
             // FpuPreserve for WPF
             // Multithreaded so that resources are actually sharable between DX and GL
-            device = new DeviceEx(
+            this.device = new DeviceEx(
                 d3d,
                 0,
                 DeviceType.Hardware,
                 IntPtr.Zero,
                 CreateFlags.HardwareVertexProcessing | CreateFlags.Multithreaded | CreateFlags.FpuPreserve,
-                presentparams);
-
+                this.presentparams);
 
             // create shared surface
-            sharedSurface = Surface.CreateRenderTarget(
+            this.sharedSurface = Surface.CreateRenderTarget(
                 this.device,
                 initW,
                 initH,
@@ -159,39 +167,64 @@ namespace WpfOpenGLBitmap
                 false);
 
             #region OpenGL Interop
-            wgl = new WGL_NV_DX_interop();
-            wglHandleDevice = wgl.WglDXOpenDeviceNV(device.NativePointer);
-            glSharedSurface = GL.GenTexture();
-            fbo = GL.GenFramebuffer();
 
-            wglHandleSharedSurface = wgl.WglDXRegisterObjectNV(wglHandleDevice, sharedSurface.NativePointer, (uint)glSharedSurface, (uint)TextureTarget.Texture2D, WGL_NV_DX_interop.WGL_ACCESS_READ_WRITE_NV);
-            singleWglHandleSharedSurfaceArray = new IntPtr[] { wglHandleSharedSurface };
+            this.wgl = new WGL_NV_DX_interop();
+            this.wglHandleDevice = wgl.WglDXOpenDeviceNV(device.NativePointer);
+            this.glSharedSurface = GL.GenTexture();
+            this.fbo = GL.GenFramebuffer();
 
-            //wgl.WglDXLockObjectsNV(wglHandleDevice, 1, singleWglHandleColorBufferArray);
+            // refer D3D9 surface and OpenGL Texture2D
+            this.wglHandleSharedSurface = wgl.WglDXRegisterObjectNV(
+                this.wglHandleDevice,
+                this.sharedSurface.NativePointer,
+                (uint)this.glSharedSurface,
+                (uint)TextureTarget.Texture2D,
+                WGL_NV_DX_interop.WGL_ACCESS_READ_WRITE_NV);
+            this.singleWglHandleSharedSurfaceArray = new IntPtr[] { this.wglHandleSharedSurface };
 
+            // setup framebuffer
             Console.WriteLine(GL.GetError());
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, this.fbo);
             Console.WriteLine(GL.GetError());
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, glSharedSurface, 0);
+            GL.FramebufferTexture2D(
+                FramebufferTarget.Framebuffer,
+                FramebufferAttachment.ColorAttachment0,
+                TextureTarget.Texture2D,
+                this.glSharedSurface,
+                0);
             Console.WriteLine(GL.GetError());
             if (hasDepthBuffer)
             {
                 var depth = GL.GenRenderbuffer();
-                GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, depth);
+                GL.FramebufferRenderbuffer(
+                    FramebufferTarget.Framebuffer,
+                    FramebufferAttachment.DepthAttachment,
+                    RenderbufferTarget.Renderbuffer,
+                    depth);
                 GL.DeleteRenderbuffer(depth);
             }
             if (hasStencilBuffer)
             {
                 var stencil = GL.GenRenderbuffer();
-                GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferAttachment.StencilAttachment, RenderbufferTarget.Renderbuffer, stencil);
+                GL.FramebufferRenderbuffer(
+                    FramebufferTarget.Framebuffer,
+                    FramebufferAttachment.StencilAttachment,
+                    RenderbufferTarget.Renderbuffer,
+                    stencil);
                 GL.DeleteRenderbuffer(stencil);
             }
 
             GL.DrawBuffer((DrawBufferMode)FramebufferAttachment.ColorAttachment0);
+
             #endregion
 
         }
 
+        /// <summary>
+        /// Resize shared surface if need
+        /// </summary>
+        /// <param name="w"></param>
+        /// <param name="h"></param>
         private void ResizeIfNeed(int w, int h)
         {
             if (w == 0 || h == 0)
@@ -200,10 +233,10 @@ namespace WpfOpenGLBitmap
             }
             if (w != this.sharedSurface.Description.Width || h != this.sharedSurface.Description.Height)
             {
-                wgl.WglDXUnregisterObjectNV(this.wglHandleDevice, wglHandleSharedSurface);
-                sharedSurface.Dispose();
-                sharedSurface = null;
-                sharedSurface = Surface.CreateRenderTarget(
+                this.wgl.WglDXUnregisterObjectNV(this.wglHandleDevice, this.wglHandleSharedSurface);
+                this.sharedSurface.Dispose();
+                this.sharedSurface = null;
+                this.sharedSurface = Surface.CreateRenderTarget(
                     this.device,
                     w,
                     h,
@@ -211,22 +244,19 @@ namespace WpfOpenGLBitmap
                     MultisampleType.None,
                     0,
                     false);
-                wglHandleSharedSurface = wgl.WglDXRegisterObjectNV(
-                    wglHandleDevice,
-                    sharedSurface.NativePointer,
-                    (uint)glSharedSurface,
+                this.wglHandleSharedSurface = this.wgl.WglDXRegisterObjectNV(
+                    this.wglHandleDevice,
+                    this.sharedSurface.NativePointer,
+                    (uint)this.glSharedSurface,
                     (uint)TextureTarget.Texture2D,
                     WGL_NV_DX_interop.WGL_ACCESS_READ_WRITE_NV);
-                singleWglHandleSharedSurfaceArray = new IntPtr[] { wglHandleSharedSurface };
+                this.singleWglHandleSharedSurfaceArray = new IntPtr[] { this.wglHandleSharedSurface };
             }
         }
 
         /// <summary>
         /// The render by OpenGL.
         /// </summary>
-        /// <param name="rendering">
-        /// The rendering.
-        /// </param>
         private void RenderGLToD3dImage(D3DImage image, int w, int h, Action rendering)
         {
             if (w == 0 || h == 0)
@@ -236,17 +266,18 @@ namespace WpfOpenGLBitmap
             this.glControl.MakeCurrent();
 
             // resize D3D/OpenGL Surface if need
-            ResizeIfNeed(w, h);
+            this.ResizeIfNeed(w, h);
 
             // OnRender may be called twice in the same frame. Only render the first time.
             if (image.IsFrontBufferAvailable)
             {
                 // render to sharedSurface using OpenGL
-                wgl.WglDXLockObjectsNV(wglHandleDevice, 1, singleWglHandleSharedSurfaceArray);
+                this.wgl.WglDXLockObjectsNV(wglHandleDevice, 1, singleWglHandleSharedSurfaceArray);
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, fbo);
+                GL.DrawBuffer((DrawBufferMode)FramebufferAttachment.ColorAttachment0);
                 rendering();
                 GL.Finish();
-                wgl.WglDXUnlockObjectsNV(wglHandleDevice, 1, singleWglHandleSharedSurfaceArray);
+                this.wgl.WglDXUnlockObjectsNV(wglHandleDevice, 1, singleWglHandleSharedSurfaceArray);
 
                 try
                 {
@@ -257,6 +288,7 @@ namespace WpfOpenGLBitmap
                 catch (Exception ex)
                 {
                     // ???
+                    Console.WriteLine(ex.ToString());
                     this.device.ResetEx(ref this.presentparams);
                 }
                 finally
